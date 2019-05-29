@@ -13,9 +13,9 @@ config = {
     "sprashivat_configuratiu": True,
     "path_to_pos": "positive.csv",
     "path_to_neg": "negative.csv",
-    "clf": "multinomial",
-    "test_size": 0.2,
-    "max_f": 300,
+    "классиф": "multinomial",
+    "тест_процент": 0.2,
+    "кол-во_признаков": 300,
 }
 
 # функция для выборки данных
@@ -85,16 +85,17 @@ while True:  # вход в бесконечный цикл чтобы юзера
     print(f"""текущая конфигурация ИИ: \n
 путь к файлу с позитивными сообщениями: {config['path_to_pos']}\n
 путь к файлу с отрицательными сообщениями: {config['path_to_neg']}\n
-классификатор:{config['clf']}\n
-процент выборки для тестов : {config['test_size']}\n
-максимальное количество признаков для алгоритма : {config['max_f']}
+классификатор:{config['классиф']}\n
+процент выборки для тестов : {config['тест_процент']}\n
+максимальное количество признаков для алгоритма : {config['кол-во_признаков']}
 """)  # вывод конфигурации
     if config['sprashivat_configuratiu']:
         user_input = str(input("вы хотите изменить конфигурацию ИИ? (д|н)"))
         if user_input == "д":
             while 1:  # тоже бесконечный цикл
                 print("выберите что хотите поменять : \n")
-                print("path_to_pos | path_to_neg | clf | test_size | max_f")
+                print(
+                    "path_to_pos | path_to_neg | классиф | тест_процент | кол-во_признаков")
                 user_input = str(input("-"))
                 try:
                     config[user_input] = str(input("введите значение : "))
@@ -118,10 +119,12 @@ while True:  # вход в бесконечный цикл чтобы юзера
             print("че? не понял")
             continue
     else:
-        try:  # вызов функций и обучение ИИ
-            x, y = data_select(config['path_to_pos'], config['path_to_neg'])
-            classify(x, y, int(config['max_f']), float(
-                config['test_size']), config['clf'])
-        except Exception as e:
-            print(e)
-            print("\t\tошибка в конфигурации")
+        # try:  # вызов функций и обучение ИИ
+        x, y = data_select(config['path_to_pos'], config['path_to_neg'])
+        classify(x, y,
+                 int(config['кол-во_признаков']),
+                 float(config['тест_процент']),
+                 config['классиф'])
+        # except Exception as e:
+        #     print(e)
+        #     print("\t\tошибка в конфигурации")
