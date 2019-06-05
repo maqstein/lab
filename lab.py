@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # импорт нужных функций и библиотек
 
+import json
 import numpy as np
 from pandas import read_csv
 from sklearn import metrics
@@ -8,16 +9,19 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
 
-# словарь с настройками ключ - название настройки, значение - значение настройки
-config = {
-    "sprashivat_configuratiu": True,
-    "path_to_pos": "positive.csv",
-    "path_to_neg": "negative.csv",
-    "классиф": "multinomial",
-    "тест_процент": 0.2,
-    "кол-во_признаков": 300,
-}
+# импорт настроек и выборов ответа
+with open("settings.json","r") as fp:
+    tmp = json.load(fp)
+    config = tmp["config"]
+    options = tmp["options"] 
+    del tmp
 
+def change_settings(key, value):
+    with open("settings.json", "r") as fp:
+        json_data = json.load(fp)
+    with open("settings.json", "w") as fp:
+        json_data["config"][key] = value
+        json.dump(json_data, fp, ensure_ascii=False)   
 # функция для выборки данных
 
 
@@ -90,8 +94,8 @@ while True:  # вход в бесконечный цикл чтобы юзера
 максимальное количество признаков для алгоритма : {config['кол-во_признаков']}
 """)  # вывод конфигурации
     if config['sprashivat_configuratiu']:
-        user_input = str(input("вы хотите изменить конфигурацию ИИ? (д|н)"))
-        if user_input == "д":
+        user_input = str(input("вы хотите изменить конфигурацию ИИ?\n 1.да \n 2.нет"))
+        if user_input == True:
             while 1:  # тоже бесконечный цикл
                 print("выберите что хотите поменять : \n")
                 print(
@@ -119,7 +123,7 @@ while True:  # вход в бесконечный цикл чтобы юзера
             print("че? не понял")
             continue
     else:
-        # try:  # вызов функций и обучение ИИ
+        # try:  # вызов функций и обучение ИИ   
         x, y = data_select(config['path_to_pos'], config['path_to_neg'])
         classify(x, y,
                  int(config['кол-во_признаков']),
