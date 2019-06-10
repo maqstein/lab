@@ -9,12 +9,15 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
 
-# импорт настроек и выборов ответа
-with open("settings.json","r") as fp:
-    tmp = json.load(fp)
-    config = tmp["config"]
-    options = tmp["options"] 
-    del tmp
+# словарь с настройками ключ - название настройки, значение - значение настройки
+config = {
+    "sprashivat_configuratiu": True,
+    "path_to_pos": "positive.csv",
+    "path_to_neg": "negative.csv",
+    "clf": "multinomial",
+    "test_size": 0.2,
+    "max_f": 300,
+}
 
 def change_settings(key, value):
     with open("settings.json", "r") as fp:
@@ -89,17 +92,16 @@ while True:  # вход в бесконечный цикл чтобы юзера
     print(f"""текущая конфигурация ИИ: \n
 путь к файлу с позитивными сообщениями: {config['path_to_pos']}\n
 путь к файлу с отрицательными сообщениями: {config['path_to_neg']}\n
-классификатор:{config['классиф']}\n
-процент выборки для тестов : {config['тест_процент']}\n
-максимальное количество признаков для алгоритма : {config['кол-во_признаков']}
+классификатор:{config['clf']}\n
+процент выборки для тестов : {config['test_size']}\n
+максимальное количество признаков для алгоритма : {config['max_f']}
 """)  # вывод конфигурации
     if config['sprashivat_configuratiu']:
         user_input = str(input("вы хотите изменить конфигурацию ИИ?\n 1.да \n 2.нет"))
         if user_input == True:
             while 1:  # тоже бесконечный цикл
                 print("выберите что хотите поменять : \n")
-                print(
-                    "path_to_pos | path_to_neg | классиф | тест_процент | кол-во_признаков")
+                print("path_to_pos | path_to_neg | clf | test_size | max_f")
                 user_input = str(input("-"))
                 try:
                     config[user_input] = str(input("введите значение : "))
@@ -123,12 +125,10 @@ while True:  # вход в бесконечный цикл чтобы юзера
             print("че? не понял")
             continue
     else:
-        # try:  # вызов функций и обучение ИИ   
-        x, y = data_select(config['path_to_pos'], config['path_to_neg'])
-        classify(x, y,
-                 int(config['кол-во_признаков']),
-                 float(config['тест_процент']),
-                 config['классиф'])
-        # except Exception as e:
-        #     print(e)
-        #     print("\t\tошибка в конфигурации")
+        try:  # вызов функций и обучение ИИ
+            x, y = data_select(config['path_to_pos'], config['path_to_neg'])
+            classify(x, y, int(config['max_f']), float(
+                config['test_size']), config['clf'])
+        except Exception as e:
+            print(e)
+            print("\t\tошибка в конфигурации")
