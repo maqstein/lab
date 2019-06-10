@@ -10,21 +10,24 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
 
 # словарь с настройками ключ - название настройки, значение - значение настройки
-config = {
-    "sprashivat_configuratiu": True,
-    "path_to_pos": "positive.csv",
-    "path_to_neg": "negative.csv",
-    "clf": "multinomial",
-    "test_size": 0.2,
-    "max_f": 300,
-}
+config = {}
 
-def change_settings(key, value):
+
+def reload_configuration():
+    global config
     with open("settings.json", "r") as fp:
-        json_data = json.load(fp)
-    with open("settings.json", "w") as fp:
-        json_data["config"][key] = value
-        json.dump(json_data, fp, ensure_ascii=False)   
+        config = json.load(fp)
+
+
+def print_configuration(config):
+    print(f"""текущая конфигурация ИИ: \n
+    путь к файлу с позитивными сообщениями: {config['path_to_pos']}\n
+    путь к файлу с отрицательными сообщениями: {config['path_to_neg']}\n
+    классификатор:{config['clf']}\n
+    процент выборки для тестов : {config['test_size']}\n
+    максимальное количество признаков для алгоритма : {config['max_f']}
+    """)
+
 # функция для выборки данных
 
 
@@ -67,68 +70,33 @@ def classify(X, Y, maxf, size, cl):
     # информация для юзверя и предсказание типа произвольного сообщения
     print("ИИ обучился, точность составила :")
     print(metrics.accuracy_score(Y_test, res))  # вывод точности ИИ
-    print("введите строку, которую хотите скормить ИИ")
-    user_input = str(input("-"))  # в user_input - строка
-    # переводим строку в двумерный массив но с 1 элементом , строкой
-    user_input = np.array([user_input])
-    # переводим двумерный массив в двумерный массив с вектором внутри
-    user_input = vectorizer.transform(user_input)
-    user_input = user_input.toarray()  # приведение данных
-    user_input = user_input.astype(int)  # опять приведение данных
-    # вывод результата предсказания ИИ
-    print(f"тип вашего сообщения ИИ оценил , как {clf.predict(user_input)}")
-    user_input = str(
-        input("1.ввести другое сообщение\n2.поменять конфигурацию\n"))  # выбор действия
-    if user_input == "1":
-        config['sprashivat_configuratiu'] = False
-    elif user_input == "2":
-        config['sprashivat_configuratiu'] = True
-    else:
-        print("че? сейчас совсем не понял")  # обработка опечаток
-
-
-while True:  # вход в бесконечный цикл чтобы юзера не выкидывало после ввода 1 сообщенрия в ИИ
-    user_input = None  # обнуление введеных пользователем данных
-    print(f"""текущая конфигурация ИИ: \n
-путь к файлу с позитивными сообщениями: {config['path_to_pos']}\n
-путь к файлу с отрицательными сообщениями: {config['path_to_neg']}\n
-классификатор:{config['clf']}\n
-процент выборки для тестов : {config['test_size']}\n
-максимальное количество признаков для алгоритма : {config['max_f']}
-""")  # вывод конфигурации
-    if config['sprashivat_configuratiu']:
-        user_input = str(input("вы хотите изменить конфигурацию ИИ?\n 1.да \n 2.нет"))
-        if user_input == True:
-            while 1:  # тоже бесконечный цикл
-                print("выберите что хотите поменять : \n")
-                print("path_to_pos | path_to_neg | clf | test_size | max_f")
-                user_input = str(input("-"))
-                try:
-                    config[user_input] = str(input("введите значение : "))
-                except Exception as e:
-                    print(e)
-                    print("ошибка в названии конфигурации")
-                    continue
-                user_input = str(input("хотите еще что то поменять?(д|н)\n"))
-                if user_input == "д":
-                    continue
-                elif user_input == "н":
-                    config['sprashivat_configuratiu'] = False
-                    break
-                else:
-                    print("что? я не понимаю")
-                    continue
-
-        elif user_input == "н":
-            config['sprashivat_configuratiu'] = False
+    while True:
+        print("введите строку, которую хотите скормить ИИ, для выхода введите 'выход', для перезагрузки конфигурации введите 'перезагрузка'")
+        user_input = str(input("-"))  # в user_input - строка
+        if user_input == "выход":
+            quit()
+        elif user_input == "перезагрузка":
+            return
         else:
-            print("че? не понял")
-            continue
-    else:
-        try:  # вызов функций и обучение ИИ
-            x, y = data_select(config['path_to_pos'], config['path_to_neg'])
-            classify(x, y, int(config['max_f']), float(
-                config['test_size']), config['clf'])
-        except Exception as e:
-            print(e)
-            print("\t\tошибка в конфигурации")
+            # переводим строку в двумерный массив но с 1 элементом , строкой
+            user_input = np.array([user_input])
+            # переводим двумерный массив в двумерный массив с вектором внутри
+            user_input = vectorizer.transform(user_input)
+            user_input = user_input.toarray()  # приведение данных
+            user_input = user_input.astype(int)  # опять приведение данных
+            # вывод результата предсказания ИИ
+            print(
+                f"тип вашего сообщения ИИ оценил , как {clf.predict(user_input)}")
+
+
+try:  # вызов функций и обучение ИИ
+    while True:
+        reload_configuration()
+        print_configuration(config)
+        x, y = data_select(config['path_to_pos'], config['path_to_neg'])
+        classify(x, y, int(config['max_f']), float(
+            config['test_size']), config['clf'])
+
+except Exception as e:
+    print(e)
+    print("\t\tошибка в конфигурации")
